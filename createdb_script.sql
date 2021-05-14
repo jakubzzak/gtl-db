@@ -44,25 +44,25 @@ create table address
 -- 7 campuses in total
 create table campus
 (
-    address integer references address primary key,
+    address_id integer references address primary key,
 )
 
 create table customer
 (
-    id             uniqueidentifier   not null primary key,
-    ssn            varchar(20)        not null unique,
-    email          varchar(100)       not null unique,
-    password       varchar(60)        not null,
-    first_name     varchar(100)       not null,
-    last_name      varchar(100)       not null,
-    campus         integer            not null references campus,
-    type           varchar(20)        not null,
-    home_address   integer            not null references address,
-    can_reserve    bit      default 1 not null,
-    can_borrow     bit      default 1 not null,
-    books_borrowed smallint default 0 not null,
-    books_reserved smallint default 0 not null,
-    is_active      bit      default 1 not null,
+    id              uniqueidentifier   not null primary key,
+    ssn             varchar(20)        not null unique,
+    email           varchar(100)       not null unique,
+    password        varchar(60)        not null,
+    first_name      varchar(100)       not null,
+    last_name       varchar(100)       not null,
+    campus_id       integer            not null references campus,
+    type            varchar(20)        not null,
+    home_address_id integer            not null references address,
+    can_reserve     bit      default 1 not null,
+    can_borrow      bit      default 1 not null,
+    books_borrowed  smallint default 0 not null,
+    books_reserved  smallint default 0 not null,
+    is_active       bit      default 1 not null,
 )
 
 create table customer_wishlist_item
@@ -75,9 +75,9 @@ create table customer_wishlist_item
 )
 create table phone_number
 (
+    customer_ssn varchar     not null,
     country_code varchar(5)  not null,
     number       varchar(15) not null,
-    customer_ssn varchar     not null,
     type         varchar(30) not null,
     primary key (country_code, number, customer_ssn)
 )

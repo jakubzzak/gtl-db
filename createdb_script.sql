@@ -1,7 +1,7 @@
--- drop database if exists gtl
--- go
--- create database gtl
--- go
+drop database if exists gtl
+go
+create database gtl
+go
 use gtl
 go
 
@@ -68,24 +68,24 @@ create table customer
 create table customer_wishlist_item
 (
     id           uniqueidentifier primary key,
-    customer_ssn varchar(20)   not null references customer,
+    customer_id  uniqueidentifier not null references customer,
     book_isbn    varchar(30)   not null references book,
     requested_at datetime,
     picked_up    bit default 0 not null,
 )
 create table phone_number
 (
-    customer_ssn varchar references customer,
+    customer_id  uniqueidentifier references customer,
     country_code varchar(5),
     number       varchar(15),
     type         varchar(30) not null,
-    primary key (customer_ssn, country_code, number)
+    primary key (customer_id, country_code, number)
 )
 
 create table card
 (
     id              uniqueidentifier primary key,
-    customer_ssn    varchar       not null,
+    customer_id     uniqueidentifier not null references customer,
     expiration_date date          not null,
     photo_path      varchar(150)  not null,
     is_active       bit default 1 not null,
@@ -113,7 +113,7 @@ create table loan
 (
     id           uniqueidentifier primary key,
     book_isbn    varchar(30)                        not null references book,
-    customer_ssn varchar(20)                        not null references customer index ix_non_customer nonclustered,
+    customer_ssn uniqueidentifier                   not null references customer index nonclustered_index_customer nonclustered,
     issued_by    uniqueidentifier                   not null references librarian,
     loaned_at    datetime default current_timestamp not null index ix_loaned_at clustered,
     returned_at  datetime, -- not creating non-clustured index here, coz it would take up on space and wouldnt make any difference

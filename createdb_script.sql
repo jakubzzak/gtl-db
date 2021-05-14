@@ -49,7 +49,7 @@ create table campus
 
 create table customer
 (
-    id              uniqueidentifier   not null primary key,
+    id              uniqueidentifier primary key,
     ssn             varchar(20)        not null unique,
     email           varchar(100)       not null unique,
     password        varchar(60)        not null,
@@ -75,11 +75,11 @@ create table customer_wishlist_item
 )
 create table phone_number
 (
-    customer_ssn varchar     not null,
-    country_code varchar(5)  not null,
-    number       varchar(15) not null,
+    customer_ssn varchar references customer,
+    country_code varchar(5),
+    number       varchar(15),
     type         varchar(30) not null,
-    primary key (country_code, number, customer_ssn)
+    primary key (customer_ssn, country_code, number)
 )
 
 create table card

@@ -1,13 +1,13 @@
-drop database if exists gtl
-go
-create database gtl
-go
-use gtl
-go
+-- drop database if exists gtl
+-- go
+-- create database gtl
+-- go
+-- use gtl
+-- go
 
 drop table if exists stats;
 drop table if exists loan;
-drop table if exists librarian_wishlist_item;
+drop table if exists library_wishlist_item;
 drop table if exists librarian;
 drop table if exists card;
 drop table if exists phone_number;
@@ -83,7 +83,7 @@ create table phone_number
 
 create table card
 (
-    id              uniqueidentifier primary key,
+    id              uniqueidentifier primary key default newid(),
     customer_ssn    varchar(20)   not null references customer,
     expiration_date date          not null,
     photo_path      varchar(150)  not null,
@@ -92,16 +92,16 @@ create table card
 
 create table librarian
 (
-    id         uniqueidentifier primary key,
-    ssn        varchar(20)  not null unique,
+    ssn        varchar(20)  not null primary key ,
     email      varchar(100) not null unique,
     password   varchar(60)  not null,
     first_name varchar(100) not null,
     last_name  varchar(100) not null,
     position   varchar(30)  not null,
+    campus     int          not null references campus
 )
 
-create table librarian_wishlist_item
+create table library_wishlist_item
 (
     id          uniqueidentifier primary key,
     title       varchar(100) not null,
@@ -113,7 +113,7 @@ create table loan
     id           uniqueidentifier primary key,
     book_isbn    varchar(30)                        not null references book,
     customer_ssn varchar(20)                        not null references customer index nonclustered_index_customer nonclustered,
-    issued_by    uniqueidentifier                   not null references librarian,
+    issued_by    varchar(20)                        not null references librarian,
     loaned_at    datetime default current_timestamp not null index ix_loaned_at clustered,
     returned_at  datetime, -- not creating non-clustured index here, coz it would take up on space and wouldnt make any difference
 )

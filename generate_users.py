@@ -1,9 +1,9 @@
-import math
+import datetime
 import random
 import uuid
 from datetime import timedelta
 from random import randrange
-
+import time
 import numpy as np
 import pandas as pd
 
@@ -58,12 +58,12 @@ def generate_users_df():
     users_df.insert(15, 'post_code', np.random.randint(1, 10000, user_rows)),
     users_df.insert(17, 'phone_country_code', np.random.randint(1, 999, user_rows)),
     users_df.insert(19, 'phone_type', random.choices(['HOME', 'OFFICE', 'MOBILE'], (500, 700, user_rows), k=user_rows))
-    users_df.insert(20, 'registered_at', random_dates(pd.to_datetime('2011-05-15'), pd.to_datetime("now"), user_rows))
+    users_df.insert(20, 'registered_at', random_dates(pd.to_datetime(start_date), pd.to_datetime("now"), user_rows))
 
     return users_df
 
 
-def generate_cards_df():
+def generate_cards_df(print_tail=False):
     cards = []
     for index, user_row in users_df.iterrows():
         delta = timedelta(365 * 4)
@@ -74,63 +74,100 @@ def generate_cards_df():
             'expiration_date': expiration_date,
             'photo_path': uuid.uuid4()
         })
+
+    if print_tail:
+        with pd.option_context('expand_frame_repr', False):
+            print(books_df.tail(10))
+
     return pd.DataFrame(cards)
 
 
-def generate_books_df():
+def generate_books_df(print_tail=False):
     books_df = pd.read_csv('online_generator_scripts/books.csv')
     book_rows = len(books_df.index)
-    with pd.option_context('expand_frame_repr', False):
-        print(books_df.tail(10))
-    books_df.insert(6, 'is_loanable', random.choices([0, 1], (1000, book_rows), k=book_rows)),
-    users_df.insert(7, 'resource_type', random.choices(
+    books_df['is_loanable'] = random.choices([0, 1], (1000, book_rows), k=book_rows)
+    books_df['resource_type'] = random.choices(
         ['BOOK', 'JOURNAL', 'ARTICLE', 'MAP', 'REFERENCE'],
-        (1000, 50, 60, 15, 15),
-        k=book_rows))
-    max_copies = 10
-    copies_count = max_copies - math.floor(math.sqrt(random.randint(0, max_copies ** 2)))
-    users_df.insert(8, 'total_copies', copies_count)
+        (1000, 50, 60, 15, 15), k=book_rows)
+    books_df['total_copies'] = np.random.randint(0, 100, book_rows)
+    books_df['title'] = books_df['title'].str.replace(r"[\"\',]", '')
+    books_df['author'] = books_df['title'].str.replace(r"[\"\',]", '')
+    books_df['subject_area'] = books_df['title'].str.replace(r"[\"\',]", '')
+    books_df['description'] = books_df['title'].str.replace(r"[\"\',]", '')
 
     # @isbn 1 varchar(30), @title 2 varchar(150), @author 3 varchar(100), @subject_area 4 varchar(100),
     # @description 5 varchar(max), @is_loanable 6 bit, @resource_type 7 varchar(30),
     # @total_copies 8 int
+
+    if print_tail:
+        with pd.option_context('expand_frame_repr', False):
+            print(books_df.tail(10))
+
     return books_df
 
 
-def generate_customer_wishlist_df():
-    for index, user_row in users_df.iterrows():
-        max_wishlist = 15
-        wishlist_count = max_wishlist - math.floor(math.sqrt(random.randint(0, max_wishlist ** 2)))
-        if wishlist_count >= 15:
-            wishlist_count = 0
-        else:
-            wishlist_count += 1
+def generate_customer_wishlist_df(print_tail=False):
+    wishlist_items = []
+    for i in range(1, 10000):
+        ssn = users_df.sample()['ssn'].values[0]
+        isbn = books_df.sample()['isbn'].values[0]
+        requested_at = random_date(
+            datetime.datetime.strptime('2011-05-15', '%Y-%m-%d'),
+            datetime.datetime.now()
+        )
+        picked_up = random.choices([0, 1], (1, 15), k=1)[0]
+        wishlist_items.append({
+            'ssn': ssn,
+            'isbn': isbn,
+            'requested_at': requested_at,
+            'picked_up': picked_up
+        })
+
+    customer_wishlist_items_df = pd.DataFrame(wishlist_items)
+
+    if print_tail:
+        with pd.option_context('expand_frame_repr', False):
+            print(customer_wishlist_items_df.tail(10))
+
+    return customer_wishlist_items_df
 
 
-def generate_librarian_df():
-    pass
+def generate_librarian_df(print_tail=False):
+    librarians_df = pd.read_csv('online_generator_scripts/librarians.csv')
+    librarians_rows = len(librarians_df)
+    librarians_df['position'] = random.choices(
+        ['LIBRARIAN', 'ASSOCIATE', 'REFERENCE', 'CHECK-OUT', 'ASSISTANT'],
+        (5, 2, 1, 3, 2), k=librarians_rows)
+    librarians_df['campus'] = np.random.randint(1, 8, librarians_rows)
 
+    if print_tail:
+        with pd.option_context('expand_frame_repr', False):
+            print(librarians_df.tail(10))
+
+    return librarians_df
 
 def generate_loans_df():
     pass
 
 
 if __name__ == '__main__':
+    start_date = '2011-05-15'
+
     books_df = generate_books_df()
     write_to_sql_exec('exec_insert_books.sql', books_df, 'insertBook')
 
     users_df = generate_users_df()
-    # write_to_sql_exec('exec_insert_users.sql', users_df, 'insertCustomer')
-    #
+    write_to_sql_exec('exec_insert_users.sql', users_df, 'insertCustomer')
+
     cards_df = generate_cards_df()
-    # write_to_sql_exec('exec_insert_cards.sql', cards_df, 'insertCard')
+    write_to_sql_exec('exec_insert_cards.sql', cards_df, 'insertCard')
+
+    customer_wishlist_items_df = generate_customer_wishlist_df(True)
+    write_to_sql_exec('exec_insert_customer_wishlist_item.sql', customer_wishlist_items_df, 'insertCustomerWishlistItem')
+
+    librarians_df = generate_librarian_df(True)
+    write_to_sql_exec('exec_insert_librarians.sql', librarians_df, 'insertLibrarian')
     #
-    customer_wishlist_items_df = generate_customer_wishlist_df()
-    # write_to_sql_exec('exec_insert_books.sql', customer_wishlist_items_df, 'insertCustomerWishlist')
-    #
-    librarians_df = generate_librarian_df()
-    # write_to_sql_exec('exec_insert_books.sql', librarians_df, 'insertLibrarian')
-    #
-    loans_df = generate_loans_df()
+    # loans_df = generate_loans_df()
     # write_to_sql_exec('exec_insert_books.sql', loans_df, 'insertLoan')
     #

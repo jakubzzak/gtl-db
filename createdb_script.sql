@@ -67,7 +67,7 @@ create table customer
 
 create table customer_wishlist_item
 (
-    id              uniqueidentifier   primary key,
+    id              uniqueidentifier   default newid() primary key,
     customer_ssn    varchar(20)        not null references customer,
     book_isbn       varchar(30)        not null references book,
     requested_at    datetime,

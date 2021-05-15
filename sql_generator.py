@@ -3,7 +3,7 @@ import random
 import uuid
 from datetime import timedelta
 from random import randrange
-import time
+
 import numpy as np
 import pandas as pd
 
@@ -35,7 +35,7 @@ def yield_sql_exec(dataframe, procedure):
         yield "exec {procedure} {args}; go;".format(procedure=procedure, args=args)
 
 
-def generate_users_df():
+def generate_users_df(print_tail=False):
     # @ssn 0 varchar(20), @email 1 varchar(100), @password 2 varchar(60), @first_name 3 varchar(100),
     # @last_name 4 varchar(100), @campus_id 5 int, @user_type 6 varchar(20),
     # @can_reserve 7 bit, @can_borrow 8 bit, @books_borrowed 9 smallint, @books_reserved 10 smallint,
@@ -60,6 +60,10 @@ def generate_users_df():
     users_df.insert(19, 'phone_type', random.choices(['HOME', 'OFFICE', 'MOBILE'], (500, 700, user_rows), k=user_rows))
     users_df.insert(20, 'registered_at', random_dates(pd.to_datetime(start_date), pd.to_datetime("now"), user_rows))
 
+    if print_tail:
+        with pd.option_context('expand_frame_repr', False):
+            print(users_df.tail(10))
+
     return users_df
 
 
@@ -75,11 +79,13 @@ def generate_cards_df(print_tail=False):
             'photo_path': uuid.uuid4()
         })
 
+    cards_df = pd.DataFrame(cards)
+
     if print_tail:
         with pd.option_context('expand_frame_repr', False):
-            print(books_df.tail(10))
+            print(cards_df.tail(10))
 
-    return pd.DataFrame(cards)
+    return cards_df
 
 
 def generate_books_df(print_tail=False):
@@ -112,7 +118,7 @@ def generate_customer_wishlist_df(print_tail=False):
         ssn = users_df.sample()['ssn'].values[0]
         isbn = books_df.sample()['isbn'].values[0]
         requested_at = random_date(
-            datetime.datetime.strptime('2011-05-15', '%Y-%m-%d'),
+            datetime.datetime.strptime(start_date, '%Y-%m-%d'),
             datetime.datetime.now()
         )
         picked_up = random.choices([0, 1], (1, 15), k=1)[0]
@@ -146,28 +152,56 @@ def generate_librarian_df(print_tail=False):
 
     return librarians_df
 
-def generate_loans_df():
-    pass
+
+def generate_loans_df(print_tail=False):
+    loans = []
+    for i in range(1, 150000):
+        book_isbn = books_df.sample()['isbn'].values[0]
+        customer_ssn = users_df.sample()['ssn'].values[0]
+        issued_by = librarians_df.sample()['ssn'].values[0]
+        loaned_at = random_date(
+            datetime.datetime.strptime(start_date, '%Y-%m-%d'),
+            datetime.datetime.now()
+        )
+        if random.randint(0, 100) > 5:
+            returned_at = loaned_at + timedelta(50)
+        else:
+            returned_at = None
+        loans.append({
+            'book_isbn': book_isbn,
+            'customer_ssn': customer_ssn,
+            'issued_by': issued_by,
+            'loaned_at': loaned_at,
+            'returned_at': returned_at
+        })
+
+    loans_df = pd.DataFrame(loans)
+
+    if print_tail:
+        with pd.option_context('expand_frame_repr', False):
+            print(loans_df.tail(10))
+
+    return loans_df
 
 
 if __name__ == '__main__':
     start_date = '2011-05-15'
 
-    books_df = generate_books_df()
+    books_df = generate_books_df(True)
     write_to_sql_exec('exec_insert_books.sql', books_df, 'insertBook')
 
-    users_df = generate_users_df()
-    write_to_sql_exec('exec_insert_users.sql', users_df, 'insertCustomer')
+    users_df = generate_users_df(True)
+    write_to_sql_exec('exec_insert_customers.sql', users_df, 'insertCustomer')
 
-    cards_df = generate_cards_df()
+    cards_df = generate_cards_df(True)
     write_to_sql_exec('exec_insert_cards.sql', cards_df, 'insertCard')
 
     customer_wishlist_items_df = generate_customer_wishlist_df(True)
-    write_to_sql_exec('exec_insert_customer_wishlist_item.sql', customer_wishlist_items_df, 'insertCustomerWishlistItem')
+    write_to_sql_exec('exec_insert_customer_wishlist_items.sql', customer_wishlist_items_df,
+                      'insertCustomerWishlistItem')
 
     librarians_df = generate_librarian_df(True)
     write_to_sql_exec('exec_insert_librarians.sql', librarians_df, 'insertLibrarian')
-    #
-    # loans_df = generate_loans_df()
-    # write_to_sql_exec('exec_insert_books.sql', loans_df, 'insertLoan')
-    #
+
+    loans_df = generate_loans_df(True)
+    write_to_sql_exec('exec_insert_loans.sql', loans_df, 'insertLoan')

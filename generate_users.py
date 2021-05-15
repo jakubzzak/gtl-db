@@ -33,11 +33,8 @@ if __name__ == '__main__':
     df.insert(17, 'phone_country_code', np.random.randint(1, 999, rows)),
     df.insert(19, 'phone_type', random.choices(['HOME', 'OFFICE', 'MOBILE'], (500, 700, rows), k=rows))
 
-    # df['id'] = df['id'].astype(str)
-
     with pd.option_context('expand_frame_repr', False):
         print(df.head(10))
-        # print(df.loc[df['user_type'] == 'PROFESSOR'].tail(10))
 
     with open('final_output/exec_insert_users.sql', mode='w+') as file:
         print('set nocount on;', file=file)

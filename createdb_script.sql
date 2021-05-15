@@ -62,6 +62,7 @@ create table customer
     books_borrowed  smallint default 0 not null,
     books_reserved  smallint default 0 not null,
     is_active       bit      default 1 not null,
+    registered_at   datetime default getdate() not null
 )
 
 create table customer_wishlist_item

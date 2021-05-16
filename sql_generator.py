@@ -36,7 +36,7 @@ def yield_sql_exec(dataframe, procedure):
         for i in list(row.values):
             if type(i) == int:
                 args_list.append(str(i))
-            elif str(i) == 'NaT':
+            elif str(i) == 'NaT' or str(i) == 'nan':
                 args_list.append('null')
             else:
                 args_list.append('\'' + str(i) + '\'')

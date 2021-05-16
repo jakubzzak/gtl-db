@@ -28,7 +28,8 @@ create table book
     total_copies     int check (total_copies >= 0)     not null,
     available_copies int check (available_copies >= 0) not null,
     resource_type    varchar(30)                       not null,
-    check (available_copies <= book.total_copies),
+    deleted          bit default 0                     not null,
+    check (available_copies <= total_copies),
 );
 
 create table address
@@ -104,7 +105,7 @@ create table librarian
 
 create table library_wishlist_item
 (
-    id          uniqueidentifier primary key,
+    id          uniqueidentifier primary key default newid(),
     title       varchar(100) not null,
     description varchar(max),
 )

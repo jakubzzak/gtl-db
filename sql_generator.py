@@ -31,8 +31,20 @@ def write_to_sql_exec(filename, dataframe, procedure):
 
 def yield_sql_exec(dataframe, procedure):
     for index, row in dataframe.iterrows():
-        args = ','.join([str(i) if type(i) == int else '\'' + str(i) + '\'' for i in list(row.values)])
-        yield "exec {procedure} {args}; go;".format(procedure=procedure, args=args)
+        args_list = []
+        for i in list(row.values):
+            if type(i) == int:
+                args_list.append(str(i))
+            elif str(i) == 'NaT':
+                args_list.append('null')
+            else:
+                args_list.append('\'' + str(i) + '\'')
+
+        args = ','.join(args_list)
+        if index % 1000 == 0:
+            yield "go;"
+        yield "exec {procedure} {args};".format(procedure=procedure, args=args)
+    yield "go;"
 
 
 def generate_users_df(print_tail=False):
@@ -70,14 +82,24 @@ def generate_users_df(print_tail=False):
 def generate_cards_df(print_tail=False):
     cards = []
     for index, user_row in users_df.iterrows():
-        delta = timedelta(365 * 4)
-        soonest_expiration = user_row['registered_at'] + delta
+        four_years_to_expire = timedelta(365 * 4)
+        soonest_expiration = user_row['registered_at'] + four_years_to_expire
         expiration_date = random_date(soonest_expiration, soonest_expiration + timedelta(7))
         cards.append({
             'customer_ssn': user_row['ssn'],
             'expiration_date': expiration_date,
             'photo_path': uuid.uuid4()
         })
+
+        if expiration_date < datetime.datetime.now() - timedelta(365 * 4) and random.randint(1, 100) < 25:
+            four_years_to_expire = timedelta(365 * 4)
+            soonest_expiration = expiration_date + four_years_to_expire
+            expiration_date = random_date(soonest_expiration, soonest_expiration + timedelta(7))
+            cards.append({
+                'customer_ssn': user_row['ssn'],
+                'expiration_date': expiration_date,
+                'photo_path': uuid.uuid4()
+            })
 
     cards_df = pd.DataFrame(cards)
 
@@ -153,9 +175,9 @@ def generate_librarian_df(print_tail=False):
     return librarians_df
 
 
-def generate_loans_df(print_tail=False):
+def generate_loans_df(loans_count, print_tail=False):
     loans = []
-    for i in range(1, 150000):
+    for i in range(1, loans_count):
         book_isbn = books_df.sample()['isbn'].values[0]
         customer_ssn = users_df.sample()['ssn'].values[0]
         issued_by = librarians_df.sample()['ssn'].values[0]
@@ -163,10 +185,19 @@ def generate_loans_df(print_tail=False):
             datetime.datetime.strptime(start_date, '%Y-%m-%d'),
             datetime.datetime.now()
         )
-        if random.randint(0, 100) > 5:
-            returned_at = loaned_at + timedelta(50)
+
+        if loaned_at > datetime.datetime.now() - timedelta(random.randint(14, 28)):
+            if random.randint(0, 100) < 5:
+                returned_at = loaned_at + timedelta(random.randint(14, 60))
+                if returned_at > datetime.datetime.now():
+                    returned_at = None
+            else:
+                returned_at = None
         else:
-            returned_at = None
+            if random.randint(0, 100) > 5:
+                returned_at = loaned_at + timedelta(random.randint(14, 60))
+            else:
+                returned_at = None
         loans.append({
             'book_isbn': book_isbn,
             'customer_ssn': customer_ssn,
@@ -175,17 +206,36 @@ def generate_loans_df(print_tail=False):
             'returned_at': returned_at
         })
 
-    loans_df = pd.DataFrame(loans)
+    loans_df = pd.DataFrame(loans).sort_values('loaned_at')
 
     if print_tail:
         with pd.option_context('expand_frame_repr', False):
             print(loans_df.tail(10))
-
     return loans_df
+
+
+def generate_library_wishlist_items(print_tail=True):
+    library_wishlist_items_df = pd.read_csv('online_generator_scripts/library_wishlist_items.csv')
+    library_wishlist_items_df['description'] = library_wishlist_items_df[library_wishlist_items_df.columns[1:]].apply(
+        lambda x: ', '.join(x.dropna().astype(str)) if random.randint(1, 100) < 90 else None,
+        axis=1
+    )
+    del library_wishlist_items_df['desc1']
+    del library_wishlist_items_df['desc2']
+    del library_wishlist_items_df['desc3']
+    del library_wishlist_items_df['desc4']
+
+    if print_tail:
+        with pd.option_context('expand_frame_repr', False):
+            print(library_wishlist_items_df.tail(10))
+    return library_wishlist_items_df
 
 
 if __name__ == '__main__':
     start_date = '2011-05-15'
+
+    library_wishlist_items_df = generate_library_wishlist_items(True)
+    write_to_sql_exec('exec_insert_library_wishlist_items.sql', library_wishlist_items_df, 'insertLibraryWishlistItem')
 
     books_df = generate_books_df(True)
     write_to_sql_exec('exec_insert_books.sql', books_df, 'insertBook')
@@ -203,5 +253,5 @@ if __name__ == '__main__':
     librarians_df = generate_librarian_df(True)
     write_to_sql_exec('exec_insert_librarians.sql', librarians_df, 'insertLibrarian')
 
-    loans_df = generate_loans_df(True)
+    loans_df = generate_loans_df(150000, True)
     write_to_sql_exec('exec_insert_loans.sql', loans_df, 'insertLoan')

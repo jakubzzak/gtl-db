@@ -30,6 +30,7 @@ create table book
     resource_type    varchar(30)                       not null,
     deleted          bit default 0                     not null,
     check (available_copies <= total_copies),
+    check (resource_type in ('BOOK', 'JOURNAL', 'ARTICLE', 'MAP', 'REFERENCE'))
 );
 
 create table address
@@ -63,7 +64,8 @@ create table customer
     books_borrowed  smallint default 0 not null,
     books_reserved  smallint default 0 not null,
     is_active       bit      default 1 not null,
-    registered_at   datetime default getdate() not null
+    registered_at   datetime default getdate() not null,
+    check(type in ('PROFESSOR', 'STUDENT'))
 )
 
 create table customer_wishlist_item
@@ -100,7 +102,8 @@ create table librarian
     first_name varchar(100) not null,
     last_name  varchar(100) not null,
     position   varchar(30)  not null,
-    campus     int          not null references campus
+    campus     int          not null references campus,
+    check(position in ('LIBRARIAN', 'ASSOCIATE', 'REFERENCE', 'CHECK-OUT', 'ASSISTANT'))
 )
 
 create table library_wishlist_item

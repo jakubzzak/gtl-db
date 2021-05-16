@@ -1,4 +1,4 @@
-create procedure insertLibraryWishlistItem @title varchar(100), @description varchar(max) as
+create or alter procedure insertLibraryWishlistItem @title varchar(100), @description varchar(max) as
 begin try
     begin transaction insert into library_wishlist_item(title, description)
                       values (@title, @description); commit transaction;

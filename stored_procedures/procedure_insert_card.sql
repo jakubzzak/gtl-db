@@ -1,4 +1,4 @@
-create procedure insertCard @customer_ssn varchar(20), @expiration_date date, @photo_path varchar(150) as
+create or alter procedure insertCard @customer_ssn varchar(20), @expiration_date date, @photo_path varchar(150) as
 begin try
 begin transaction
     insert into card(customer_ssn, expiration_date, photo_path) values(@customer_ssn, @expiration_date, @photo_path);

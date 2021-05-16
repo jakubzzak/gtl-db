@@ -1,4 +1,4 @@
-create procedure insertLibrarian @ssn varchar(20), @email varchar(100), @password varchar(60), @first_name varchar(100),
+create or alter procedure insertLibrarian @ssn varchar(20), @email varchar(100), @password varchar(60), @first_name varchar(100),
                                 @last_name varchar(100), @position varchar(30), @campus int as
 begin try
 begin transaction

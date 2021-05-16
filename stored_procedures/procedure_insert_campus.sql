@@ -1,4 +1,4 @@
-create procedure insertCampus @street varchar(150), @number varchar(50), @city varchar(100), @post_code varchar(20), @country varchar(100) as
+create or alter procedure insertCampus @street varchar(150), @number varchar(50), @city varchar(100), @post_code varchar(20), @country varchar(100) as
 begin try
     begin transaction declare @id varchar(30)
     declare @table table

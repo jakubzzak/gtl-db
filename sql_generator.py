@@ -1,4 +1,5 @@
 import datetime
+import gc
 import random
 import uuid
 from datetime import timedelta
@@ -42,6 +43,7 @@ def yield_sql_exec(dataframe, procedure):
 
         args = ','.join(args_list)
         if index % 1000 == 0:
+            print('Yielded {i} rows'.format(i=index))
             yield "go;"
         yield "exec {procedure} {args};".format(procedure=procedure, args=args)
     yield "go;"
@@ -56,7 +58,7 @@ def generate_users_df(print_tail=False):
     # @country 16 varchar(100), @phone_country_code 17 as varchar(5), @phone_number 18 varchar(15),
     # @phone_type 19 varchar(30)
 
-    users_df = pd.read_csv('online_generator_scripts/users.csv')
+    users_df = pd.read_csv('online_generator_seeds/users.csv')
 
     user_rows = len(users_df.index)
     users_df.insert(5, 'campus_id', np.random.randint(1, 8, user_rows))
@@ -110,18 +112,18 @@ def generate_cards_df(print_tail=False):
     return cards_df
 
 
-def generate_books_df(print_tail=False):
-    books_df = pd.read_csv('online_generator_scripts/books.csv')
+def generate_books_df(max_copies, print_tail=False):
+    books_df = pd.read_csv('online_generator_seeds/books.csv')
     book_rows = len(books_df.index)
     books_df['is_loanable'] = random.choices([0, 1], (1000, book_rows), k=book_rows)
     books_df['resource_type'] = random.choices(
         ['BOOK', 'JOURNAL', 'ARTICLE', 'MAP', 'REFERENCE'],
         (1000, 50, 60, 15, 15), k=book_rows)
-    books_df['total_copies'] = np.random.randint(0, 100, book_rows)
+    books_df['total_copies'] = np.random.randint(0, max_copies, book_rows)
     books_df['title'] = books_df['title'].str.replace(r"[\"\',]", '')
-    books_df['author'] = books_df['title'].str.replace(r"[\"\',]", '')
-    books_df['subject_area'] = books_df['title'].str.replace(r"[\"\',]", '')
-    books_df['description'] = books_df['title'].str.replace(r"[\"\',]", '')
+    books_df['author'] = books_df['author'].str.replace(r"[\"\',]", '')
+    books_df['subject_area'] = books_df['subject_area'].str.replace(r"[\"\',]", '')
+    books_df['description'] = books_df['description'].str.replace(r"[\"\',]", '')
 
     # @isbn 1 varchar(30), @title 2 varchar(150), @author 3 varchar(100), @subject_area 4 varchar(100),
     # @description 5 varchar(max), @is_loanable 6 bit, @resource_type 7 varchar(30),
@@ -161,7 +163,7 @@ def generate_customer_wishlist_df(print_tail=False):
 
 
 def generate_librarian_df(print_tail=False):
-    librarians_df = pd.read_csv('online_generator_scripts/librarians.csv')
+    librarians_df = pd.read_csv('online_generator_seeds/librarians.csv')
     librarians_rows = len(librarians_df)
     librarians_df['position'] = random.choices(
         ['LIBRARIAN', 'ASSOCIATE', 'REFERENCE', 'CHECK-OUT', 'ASSISTANT'],
@@ -176,16 +178,7 @@ def generate_librarian_df(print_tail=False):
 
 
 def generate_loans_df(loans_count, print_tail=False):
-    loans = []
-    for i in range(1, loans_count):
-        book_isbn = books_df.sample()['isbn'].values[0]
-        customer_ssn = users_df.sample()['ssn'].values[0]
-        issued_by = librarians_df.sample()['ssn'].values[0]
-        loaned_at = random_date(
-            datetime.datetime.strptime(start_date, '%Y-%m-%d'),
-            datetime.datetime.now()
-        )
-
+    def get_returned_date(loaned_at):
         if loaned_at > datetime.datetime.now() - timedelta(random.randint(14, 28)):
             if random.randint(0, 100) < 5:
                 returned_at = loaned_at + timedelta(random.randint(14, 60))
@@ -198,15 +191,17 @@ def generate_loans_df(loans_count, print_tail=False):
                 returned_at = loaned_at + timedelta(random.randint(14, 60))
             else:
                 returned_at = None
-        loans.append({
-            'book_isbn': book_isbn,
-            'customer_ssn': customer_ssn,
-            'issued_by': issued_by,
-            'loaned_at': loaned_at,
-            'returned_at': returned_at
-        })
+        return returned_at
 
-    loans_df = pd.DataFrame(loans).sort_values('loaned_at')
+    book_isbn = books_df.sample(loans_count, replace=True).reset_index()['isbn']
+    customer_ssn = users_df.sample(loans_count, replace=True).reset_index()['ssn']
+    issued_by = librarians_df.sample(loans_count, replace=True).reset_index()['ssn']
+    loaned_at = random_dates(pd.to_datetime(start_date), pd.to_datetime("now"), loans_count).to_series()
+    returned_at = loaned_at.apply(get_returned_date).reset_index(name='returned_at', drop=True)
+    loaned_at = loaned_at.reset_index(name='loaned_at', drop=True)
+
+    loans_df = pd.concat([book_isbn, customer_ssn, issued_by, loaned_at, returned_at], axis=1)
+    loans_df = loans_df.sort_values(0).reset_index(drop=True)
 
     if print_tail:
         with pd.option_context('expand_frame_repr', False):
@@ -215,7 +210,7 @@ def generate_loans_df(loans_count, print_tail=False):
 
 
 def generate_library_wishlist_items(print_tail=True):
-    library_wishlist_items_df = pd.read_csv('online_generator_scripts/library_wishlist_items.csv')
+    library_wishlist_items_df = pd.read_csv('online_generator_seeds/library_wishlist_items.csv')
     library_wishlist_items_df['description'] = library_wishlist_items_df[library_wishlist_items_df.columns[1:]].apply(
         lambda x: ', '.join(x.dropna().astype(str)) if random.randint(1, 100) < 90 else None,
         axis=1
@@ -237,7 +232,7 @@ if __name__ == '__main__':
     library_wishlist_items_df = generate_library_wishlist_items(True)
     write_to_sql_exec('exec_insert_library_wishlist_items.sql', library_wishlist_items_df, 'insertLibraryWishlistItem')
 
-    books_df = generate_books_df(True)
+    books_df = generate_books_df(30, True)
     write_to_sql_exec('exec_insert_books.sql', books_df, 'insertBook')
 
     users_df = generate_users_df(True)
@@ -253,5 +248,5 @@ if __name__ == '__main__':
     librarians_df = generate_librarian_df(True)
     write_to_sql_exec('exec_insert_librarians.sql', librarians_df, 'insertLibrarian')
 
-    loans_df = generate_loans_df(150000, True)
+    loans_df = generate_loans_df(800000, True)
     write_to_sql_exec('exec_insert_loans.sql', loans_df, 'insertLoan')

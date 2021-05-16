@@ -1,4 +1,4 @@
-create procedure insertCustomer @ssn varchar(20), @email varchar(100), @password varchar(60), @first_name varchar(100),
+create or alter procedure insertCustomer @ssn varchar(20), @email varchar(100), @password varchar(60), @first_name varchar(100),
                                 @last_name varchar(100), @campus_id int, @user_type varchar(20),
                                 @can_reserve bit, @can_borrow bit, @books_borrowed smallint, @books_reserved smallint,
                                 @is_active bit, @street varchar(150), @street_number varchar(50), @city varchar(100), @post_code varchar(20),

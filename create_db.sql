@@ -103,7 +103,7 @@ create table librarian
     last_name  varchar(100) not null,
     position   varchar(30)  not null,
     campus     int          not null references campus,
-    check(position in ('LIBRARIAN', 'ASSOCIATE', 'REFERENCE', 'CHECK-OUT', 'ASSISTANT'))
+    check(position in ('LIBRARIAN', 'ASSOCIATE', 'REFERENCE', 'CHECK_OUT', 'ASSISTANT'))
 )
 
 create table library_wishlist_item

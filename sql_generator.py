@@ -166,7 +166,7 @@ def generate_librarian_df(print_tail=False):
     librarians_df = pd.read_csv('online_generator_seeds/librarians.csv')
     librarians_rows = len(librarians_df)
     librarians_df['position'] = random.choices(
-        ['LIBRARIAN', 'ASSOCIATE', 'REFERENCE', 'CHECK-OUT', 'ASSISTANT'],
+        ['LIBRARIAN', 'ASSOCIATE', 'REFERENCE', 'CHECK_OUT', 'ASSISTANT'],
         (5, 2, 1, 3, 2), k=librarians_rows)
     librarians_df['campus'] = np.random.randint(1, 8, librarians_rows)
 

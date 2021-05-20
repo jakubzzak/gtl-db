@@ -248,5 +248,5 @@ if __name__ == '__main__':
     librarians_df = generate_librarian_df(True)
     write_to_sql_exec('exec_insert_librarians.sql', librarians_df, 'insertLibrarian')
 
-    loans_df = generate_loans_df(800000, True)
+    loans_df = generate_loans_df(500000, True)
     write_to_sql_exec('exec_insert_loans.sql', loans_df, 'insertLoan')

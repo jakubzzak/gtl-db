@@ -232,7 +232,7 @@ if __name__ == '__main__':
     library_wishlist_items_df = generate_library_wishlist_items(True)
     write_to_sql_exec('exec_insert_library_wishlist_items.sql', library_wishlist_items_df, 'insertLibraryWishlistItem')
 
-    books_df = generate_books_df(30, True)
+    books_df = generate_books_df(18, True)
     write_to_sql_exec('exec_insert_books.sql', books_df, 'insertBook')
 
     users_df = generate_users_df(True)

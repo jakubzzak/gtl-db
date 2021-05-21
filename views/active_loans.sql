@@ -1,6 +1,7 @@
 create or alter view loans_after_grace_period as
 select ssn,
        first_name + ' ' + last_name as name,
+       customer.email,
        customer.type,
        loaned_at,
        case customer.type
@@ -15,10 +16,8 @@ select ssn,
            end as grace_period_end,
        book_isbn,
        book.title,
-       book.author,
-       '(+' + pn.country_code + ') ' + pn.number as phone_number
+       book.author
 from loan
          join customer on loan.customer_ssn = ssn
          join book on book.isbn = loan.book_isbn
-         join phone_number pn on customer.ssn = pn.customer_ssn
 where loan.returned_at is null;

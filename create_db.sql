@@ -21,8 +21,8 @@ create table book
 (
     isbn             varchar(30) primary key,
     title            varchar(150)                      not null,
-    author           varchar(100)                      not null, -- ?
-    subject_area     varchar(100)                      not null, -- ?
+    author           varchar(100)                      not null,
+    subject_area     varchar(100)                      not null,
     description      varchar(max),
     is_loanable      bit default 1                     not null,
     total_copies     int check (total_copies >= 0)     not null,
@@ -32,6 +32,11 @@ create table book
     check (available_copies <= total_copies),
     check (resource_type in ('BOOK', 'JOURNAL', 'ARTICLE', 'MAP', 'REFERENCE'))
 );
+
+create nonclustered index ix_book_title on book(title); go;
+create nonclustered index ix_book_title on book(title); go;
+create nonclustered index ix_book_title on book(title); go;
+
 
 create table address
 (
@@ -120,7 +125,7 @@ create table loan
     customer_ssn varchar(20)                        not null references customer index nonclustered_index_customer nonclustered,
     issued_by    varchar(20)                        not null references librarian,
     loaned_at    datetime default current_timestamp not null index ix_loaned_at clustered,
-    returned_at  datetime, -- not creating non-clustured index here, coz it would take up on space and wouldnt make any difference
+    returned_at  datetime,
 )
 
 create table stats

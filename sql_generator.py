@@ -1,5 +1,4 @@
 import datetime
-import gc
 import random
 import uuid
 from datetime import timedelta

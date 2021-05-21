@@ -11,7 +11,7 @@ select ssn,
        case customer.type
            when 'STUDENT' then CONVERT(date, dateadd(week, 4, loaned_at))
            when 'PROFESSOR' then CONVERT(date, dateadd(week, 2, dateadd(month, 3, loaned_at)))
-           else CONVERT(date, dateadd(week, 3, loaned_at))
+           else CONVERT(date, dateadd(week, 4, loaned_at))
            end as grace_period_end,
        book_isbn,
        book.title,

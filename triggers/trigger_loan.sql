@@ -40,6 +40,6 @@ create trigger update_loan_instead on loan instead of update as
                         book_isbn = inserted.book_isbn,
                         returned_at = inserted.returned_at,
                         customer_ssn = inserted.customer_ssn
-        from inserted where loan.id = inserted.id
+        from inserted, deleted where loan.id = deleted.id
     end;
 go;

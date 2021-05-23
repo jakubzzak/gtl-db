@@ -1,30 +1,29 @@
-drop procedure  if exists  find_book;
-drop type if exists resource_types;
-CREATE TYPE resource_types
-AS TABLE
-(
-    item varchar(30)
-);
-GO
-
-create or alter procedure find_book @order_by varchar(100), @offset int, @limit int,
-    @resource_types as dbo.resource_types readonly,
-    @title varchar(150),
-    @author varchar(100),
-    @area varchar(100)
+create or
+alter procedure find_book @order_by varchar(100) = 'title',
+                          @offset int = 0,
+                          @limit int = 10,
+                          @search_group varchar(30) = 'EVERYTHING',
+                          @title varchar(max) = null,
+                          @author varchar(max) = null,
+                          @area varchar(max) = null
 as
-
-SELECT * FROM book
-WHERE deleted=0
-  AND (resource_type IN (select * from @resource_types))
-  AND (title like '%' + @title + '%' or @title is null)
-  AND (author like '%' + @author + '%' or @author is null)
-  AND (subject_area like '%' + @area + '%' or @area is null)
-            ORDER BY case @order_by
-                when 'title' then book.title
-                when 'author' then book.author
-                when 'isbn' then book.isbn
-            end
-            OFFSET @offset ROWS
-FETCH NEXT @limit ROW ONLY;
+begin
+    SELECT *
+    FROM book
+    WHERE deleted = 0
+      AND (@search_group = 'EVERYTHING' or resource_type = @search_group)
+      AND (
+            (@title is not null and title like '%' + @title + '%')
+            OR
+            (@author is not null and author like '%' + @author + '%')
+            OR
+            (@area is not null and subject_area like '%' + @area + '%')
+        )
+    ORDER BY case @order_by
+                 when 'title' then book.title
+                 when 'author' then book.author
+                 else book.isbn
+                 end
+    OFFSET @offset ROWS FETCH NEXT @limit ROW ONLY;
+end
 go;

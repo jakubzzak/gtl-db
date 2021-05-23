@@ -8,15 +8,15 @@ AS TABLE
 GO
 
 create or alter procedure find_book @order_by varchar(100), @offset int, @limit int,
-    @sought_types as dbo.resource_types readonly,
-    @title varchar(max),
-    @author varchar(max),
-    @area varchar(max)
+    @resource_types as dbo.resource_types readonly,
+    @title varchar(150),
+    @author varchar(100),
+    @area varchar(100)
 as
-    begin
+
 SELECT * FROM book
 WHERE deleted=0
-  AND (resource_type IN (select * from @sought_types))
+  AND (resource_type IN (select * from @resource_types))
   AND (title like '%' + @title + '%' or @title is null)
   AND (author like '%' + @author + '%' or @author is null)
   AND (subject_area like '%' + @area + '%' or @area is null)
@@ -27,5 +27,4 @@ WHERE deleted=0
             end
             OFFSET @offset ROWS
 FETCH NEXT @limit ROW ONLY;
-end
 go;

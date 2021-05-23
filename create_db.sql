@@ -34,8 +34,8 @@ create table book
 );
 
 create nonclustered index ix_book_title on book(title); go;
-create nonclustered index ix_book_title on book(title); go;
-create nonclustered index ix_book_title on book(title); go;
+create nonclustered index ix_book_author on book(author); go;
+create nonclustered index ix_book_subject_area on book(subject_area); go;
 
 
 create table address
@@ -72,6 +72,11 @@ create table customer
     registered_at   datetime default getdate() not null,
     check(type in ('PROFESSOR', 'STUDENT'))
 )
+
+create nonclustered index ix_customer_email on customer(email); go;
+create nonclustered index ix_customer_first_name on customer(first_name); go;
+create nonclustered index ix_customer_last_name on customer(last_name); go;
+
 
 create table customer_wishlist_item
 (
@@ -120,7 +125,7 @@ create table library_wishlist_item
 
 create table loan
 (
-    id           uniqueidentifier primary key,
+    id           uniqueidentifier primary key nonclustered default newid(),
     book_isbn    varchar(30)                        not null references book,
     customer_ssn varchar(20)                        not null references customer index nonclustered_index_customer nonclustered,
     issued_by    varchar(20)                        not null references librarian,

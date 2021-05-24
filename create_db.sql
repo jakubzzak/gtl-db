@@ -106,7 +106,7 @@ create table card
 
 create table librarian
 (
-    ssn        varchar(20)  not null primary key ,
+    ssn        varchar(20)  not null primary key,
     email      varchar(100) not null unique,
     password   varchar(60)  not null,
     first_name varchar(100) not null,
@@ -126,11 +126,11 @@ create table library_wishlist_item
 create table loan
 (
     id           uniqueidentifier primary key nonclustered default newid(),
-    book_isbn    varchar(30)                        not null references book,
+    book_isbn    varchar(30)                        not null references book index ix_loan_book nonclustered,
     customer_ssn varchar(20)                        not null references customer index nonclustered_index_customer nonclustered,
     issued_by    varchar(20)                        not null references librarian,
     loaned_at    datetime default current_timestamp not null index ix_loaned_at clustered,
-    returned_at  datetime,
+    returned_at  datetime index ix_returned_at nonclustered,
 )
 
 create table stats

@@ -30,6 +30,7 @@ create table book
     resource_type    varchar(30)                       not null,
     deleted          bit default 0                     not null,
     check (available_copies <= total_copies),
+    check (available_copies >= 0 and total_copies >= 0),
     check (resource_type in ('BOOK', 'JOURNAL', 'ARTICLE', 'MAP', 'REFERENCE'))
 );
 

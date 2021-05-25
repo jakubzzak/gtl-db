@@ -1,4 +1,4 @@
-create or alter view loans_after_grace_period as
+create or alter view not_returned_loans as
 select ssn,
        first_name + ' ' + last_name as name,
        customer.email,

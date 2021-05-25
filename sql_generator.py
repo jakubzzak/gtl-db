@@ -124,10 +124,6 @@ def generate_books_df(max_copies, print_tail=False):
     books_df['subject_area'] = books_df['subject_area'].str.replace(r"[\"\',]", '')
     books_df['description'] = books_df['description'].str.replace(r"[\"\',]", '')
 
-    # @isbn 1 varchar(30), @title 2 varchar(150), @author 3 varchar(100), @subject_area 4 varchar(100),
-    # @description 5 varchar(max), @is_loanable 6 bit, @resource_type 7 varchar(30),
-    # @total_copies 8 int
-
     if print_tail:
         with pd.option_context('expand_frame_repr', False):
             print(books_df.tail(10))

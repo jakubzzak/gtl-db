@@ -21,3 +21,5 @@ from loan
          join customer on loan.customer_ssn = ssn
          join book on book.isbn = loan.book_isbn
 where loan.returned_at is null;
+
+go

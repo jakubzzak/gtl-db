@@ -26,4 +26,4 @@ begin
                  end
     OFFSET @offset ROWS FETCH NEXT @limit ROW ONLY;
 end
-go;
+go

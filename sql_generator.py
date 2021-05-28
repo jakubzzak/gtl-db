@@ -43,9 +43,9 @@ def yield_sql_exec(dataframe, procedure):
         args = ','.join(args_list)
         if index % 1000 == 0:
             print('Yielded {i} rows'.format(i=index))
-            yield "go;"
+            yield "go"
         yield "exec {procedure} {args};".format(procedure=procedure, args=args)
-    yield "go;"
+    yield "go"
 
 
 def generate_users_df(print_tail=False):

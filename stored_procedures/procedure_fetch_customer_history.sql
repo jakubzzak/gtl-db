@@ -9,3 +9,4 @@ begin
     WHERE l.customer_ssn = @customer_ssn
     ORDER BY loaned_at desc;
 end
+go

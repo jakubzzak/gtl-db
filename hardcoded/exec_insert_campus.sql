@@ -5,3 +5,4 @@ exec insertCampus N'Selma Lagerløfs Vej', '2', 'Aalborg', '9220', 'Denmark';
 exec insertCampus 'Fredrik Bajers Vej', '7K', N'Aalborg Øst', '9220', 'Denmark';
 exec insertCampus N'Fibigerstræde', '2', 'Aalborg', '9220', 'Denmark';
 exec insertCampus N'Fibigerstræde', '14', N'Aalborg Øst', '9220', 'Denmark';
+go

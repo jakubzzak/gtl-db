@@ -6,3 +6,4 @@ begin
     FROM loan l
     WHERE l.returned_at IS NOT NULL;
 end
+go

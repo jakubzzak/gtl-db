@@ -2,8 +2,8 @@
 -- go
 -- create database gtl
 -- go
--- use gtl
--- go
+use gtl
+go
 
 drop table if exists stats;
 drop table if exists loan;
@@ -33,9 +33,12 @@ create table book
     check (resource_type in ('BOOK', 'JOURNAL', 'ARTICLE', 'MAP', 'REFERENCE'))
 );
 
-create nonclustered index ix_book_title on book(title); go;
-create nonclustered index ix_book_author on book(author); go;
-create nonclustered index ix_book_subject_area on book(subject_area); go;
+create nonclustered index ix_book_title on book(title);
+go
+create nonclustered index ix_book_author on book(author);
+go
+create nonclustered index ix_book_subject_area on book(subject_area);
+go
 
 
 create table address
@@ -73,10 +76,12 @@ create table customer
     check(type in ('PROFESSOR', 'STUDENT'))
 )
 
-create nonclustered index ix_customer_email on customer(email); go;
-create nonclustered index ix_customer_first_name on customer(first_name); go;
-create nonclustered index ix_customer_last_name on customer(last_name); go;
-
+create nonclustered index ix_customer_email on customer(email);
+go
+create nonclustered index ix_customer_first_name on customer(first_name);
+go
+create nonclustered index ix_customer_last_name on customer(last_name);
+go
 
 create table customer_wishlist_item
 (
@@ -140,3 +145,5 @@ create table stats
     description varchar(max),
     value       varchar(150),
 )
+
+go

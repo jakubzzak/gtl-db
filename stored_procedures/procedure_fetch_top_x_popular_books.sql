@@ -14,3 +14,4 @@ begin
     GROUP BY b.isbn, b.title, b.author, b.resource_type, b.total_copies, b.available_copies
     ORDER BY count DESC, title;
 end
+go

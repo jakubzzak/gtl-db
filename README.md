@@ -1,6 +1,6 @@
 DB scripts for GTL
 ==
-###realistic data initialization
+###real data initialization
 
 To successfully initialize mssql database with this data follow the following steps in this particular order:
 
@@ -18,3 +18,17 @@ To successfully initialize mssql database with this data follow the following st
     - exec_insert_cards.sql
     - exec_insert_customer_wishlist_items.sql
     - exec_insert_loans.sql
+
+Now when your database is ready take a look at:
+- https://github.com/jakubzzak/georgia-tech-library (React FE)
+- https://github.com/jakubzzak/gtl-backend (Flask BE) 
+  
+to set up the rest.
+
+###Live demo at https://www.gtl.cybik.sk
+
+test customer:
+email=petersagan@ucn.dk, passwd=petertest
+
+test librarian:
+email=rockybalboa@ucn.dk, passwd=rockytest

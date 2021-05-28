@@ -8,7 +8,7 @@ To successfully initialize mssql database with this data follow the following st
 - Run all the procedures found in **stored_procedure/** folder
 - Create triggers sored in **triggers/** folder
 - UCN campuses need to be added respectively, run **exec_insert_campus.sql** from the **hardcoded/** folder
-- In the end execute all of the following files in **final output/** folder in this specific order:
+- In the end execute all of the following files in **final_output/** folder in this specific order:
     - exec_insert_librarians.sql
     - exec_insert_books.sql
     - exec_insert_library_wishlist_items.sql

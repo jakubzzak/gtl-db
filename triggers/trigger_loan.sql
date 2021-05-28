@@ -29,29 +29,33 @@ begin
                             end
                         insert into loan select * from inserted
                     end
-end
-    create trigger update_loan_instead
-        on loan
-        instead of update as
-    begin
-        if ((select returned_at from deleted) is null and (select returned_at from inserted) is not null)
-            begin
-                update book set available_copies += 1 from inserted where isbn = inserted.book_isbn
-                update customer set books_borrowed -= 1 from inserted where ssn = inserted.customer_ssn
-            end
-        if ((select returned_at from deleted) is not null and (select returned_at from inserted) is null)
-            begin
-                update book set available_copies -= 1 from inserted where isbn = inserted.book_isbn
-                update customer set books_borrowed += 1 from inserted where ssn = inserted.customer_ssn
-            end
-        update loan
-        set loaned_at    = inserted.loaned_at,
-            issued_by    = inserted.issued_by,
-            book_isbn    = inserted.book_isbn,
-            returned_at  = inserted.returned_at,
-            customer_ssn = inserted.customer_ssn
-        from inserted,
-             deleted
-        where loan.id = deleted.id
-    end;
+end;
+
+go
+
+create trigger update_loan_instead
+    on loan
+    instead of update as
+begin
+    if ((select returned_at from deleted) is null and (select returned_at from inserted) is not null)
+        begin
+            update book set available_copies += 1 from inserted where isbn = inserted.book_isbn
+            update customer set books_borrowed -= 1 from inserted where ssn = inserted.customer_ssn
+        end
+    if ((select returned_at from deleted) is not null and (select returned_at from inserted) is null)
+        begin
+            update book set available_copies -= 1 from inserted where isbn = inserted.book_isbn
+            update customer set books_borrowed += 1 from inserted where ssn = inserted.customer_ssn
+        end
+    update loan
+    set loaned_at    = inserted.loaned_at,
+        issued_by    = inserted.issued_by,
+        book_isbn    = inserted.book_isbn,
+        returned_at  = inserted.returned_at,
+        customer_ssn = inserted.customer_ssn
+    from inserted,
+         deleted
+    where loan.id = deleted.id
+end;
+
 go

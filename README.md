@@ -1,13 +1,14 @@
-db scripts for gtl
+DB scripts for GTL, realistic data initialization
+==
 
-1. Run the sql_generator.py. It will generate new SQL scripts to the final_output folder.
-2. Run the SQL queries in the following order:
-- **create_db.sql**
-- all the procedures from the **stored_procedure** folder
-- triggers from the **triggers** folder
-- **exec_insert_campus.sql** from the **hardcoded** folder
-- files from the **final output**:
-    - exec_insert_campus.sql
+To successfully initialize mssql database with this data follow the following steps in this particular order:
+
+- Run the **sql_generator.py** to generate new SQL insert data scripts to the final_output folder
+- Execute **create_db.sql** script against your database
+- Run all the procedures found in **stored_procedure/** folder
+- Create triggers sored in **triggers/** folder
+- UCN campuses need to be added respectively, run **exec_insert_campus.sql** from the **hardcoded/** folder
+- In the end execute all of the following files in **final output/** folder in this specific order:
     - exec_insert_librarians.sql
     - exec_insert_books.sql
     - exec_insert_library_wishlist_items.sql

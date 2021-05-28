@@ -18,7 +18,9 @@ To successfully initialize mssql database with this data follow the following st
     - exec_insert_cards.sql
     - exec_insert_customer_wishlist_items.sql
     - exec_insert_loans.sql
-
+  
+\
+\
 Now when your database is ready take a look at:
 - https://github.com/jakubzzak/georgia-tech-library (React FE)
 - https://github.com/jakubzzak/gtl-backend (Flask BE) 
